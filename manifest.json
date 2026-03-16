@@ -1,0 +1,15 @@
+{
+  "name": "Skaner 15-cyfr",
+  "short_name": "Skaner",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#007bff",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/241/241528.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

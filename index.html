@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skaner 15-cyfr</title>
+    <script src="html5-qrcode.min.js"></script>
+    <script src="qrcode.min.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f2f5; }
+        
+        /* Kontener skanera */
+        #reader-wrapper { position: relative; width: 100%; max-width: 500px; border-radius: 10px; overflow: hidden; background: #000; }
+        #reader { width: 100%; }
+
+        /* Własna ramka celownicza */
+        #scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 120px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            pointer-events: none; /* Kliknięcia przechodzą pod spód */
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4); /* Zacienienie reszty ekranu */
+            z-index: 10;
+        }
+
+        /* Narożniki celownika */
+        #scanner-overlay::before, #scanner-overlay::after {
+            content: ""; position: absolute; width: 20px; height: 20px; border: 4px solid #007bff;
+        }
+        #scanner-overlay::before { top: -4px; left: -4px; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+        #scanner-overlay::after { bottom: -4px; right: -4px; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+
+        #result-container { margin-top: 20px; padding: 20px; background: white; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; z-index: 20; position: relative; }
+        #qrcode { margin-top: 15px; display: flex; justify-content: center; }
+        #status { color: #888; font-size: 0.9em; margin-top: 15px; text-align: center; }
+        button { padding: 30px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        strong { font-size: 1.2em; color: #333; }
+    </style>
+</head>
+<body>
+    
+    <div id="reader-wrapper">
+        <div id="reader"></div>
+        <div id="scanner-overlay"></div>
+    </div>
+
+    <div id="status">SKANUJ KOD</div>
+
+    <div id="result-container">
+        <p><strong id="scan-result">---</strong></p>
+        <div id="qrcode"></div>
+        <br>
+        <button onclick="resetScanner()">Skanuj ponownie</button>
+    </div>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const statusText = document.getElementById('status');
+        const resultContainer = document.getElementById('result-container');
+        const scanResultText = document.getElementById('scan-result');
+        const qrContainer = document.getElementById('qrcode');
+        const overlay = document.getElementById('scanner-overlay');
+
+        // Rozmiar ramki musi być spójny z CSS
+        const config = { 
+            fps: 15, 
+            qrbox: { width: 280, height: 120 },
+            aspectRatio: 1.0
+        };
+
+        function startScanner() {
+            overlay.style.display = "block";
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    if (/^\d{15}$/.test(decodedText)) {
+                        processValidCode(decodedText);
+                    } else {
+                        statusText.innerText = "Kod nieprawidłowy (ma " + decodedText.length + " cyfr)";
+                        statusText.style.color = "red";
+                    }
+                }
+            ).catch(err => console.error(err));
+        }
+
+        function processValidCode(code) {
+            html5QrCode.stop().then(() => {
+                overlay.style.display = "none";
+                statusText.innerText = "Zeskanowano poprawnie!";
+                statusText.style.color = "green";
+                scanResultText.innerText = code;
+                resultContainer.style.display = 'block';
+
+                qrContainer.innerHTML = "";
+                new QRCode(qrContainer, {
+                    text: code,
+                    width: 200,
+                    height: 200,
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+        }
+
+        function resetScanner() {
+            resultContainer.style.display = 'none';
+            statusText.innerText = "SKANUJ KOD";
+            statusText.style.color = "#888";
+            startScanner();
+        }
+
+        startScanner();
+    </script>
+</body>
+</html>
