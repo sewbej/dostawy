@@ -8,7 +8,7 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "https://dostawy.prv.pl/EAN13.png",
+      "src": "https://sewbej.github.io/dostawy/EAN13.png",
       "sizes": "512x512",
       "type": "image/png"
     }
