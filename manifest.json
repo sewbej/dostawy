@@ -1,13 +1,14 @@
 {
-  "name": "Skaner 15-cyfr",
+  "name": "Skaner",
   "short_name": "Skaner",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f0f2f5",
-  "theme_color": "#007bff",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/241/241528.png",
+      "src": "https://dostawy.prv.pl/EAN13.png",
       "sizes": "512x512",
       "type": "image/png"
     }
