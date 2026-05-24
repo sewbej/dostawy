@@ -109,14 +109,17 @@
         <div class="modal-content">
             <h3>Wprowadź dane</h3>
             
-            <div class="radio-group">
-                <label class="radio-label">
-                    <input type="radio" name="statusWybor" value="DOBRE" checked> DOBRE
-                </label>
-                <label class="radio-label">
-                    <input type="radio" name="statusWybor" value="OTWARTE"> OTWARTE
-                </label>
-            </div>
+<div class="radio-group" style="display: flex; flex-direction: column; gap: 15px;">
+    <label class="radio-label">
+        <input type="radio" name="statusWybor" value="DOBRE" checked> DOBRE
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="statusWybor" value="OTWARTE"> OTWARTE
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="statusWybor" value="ZGNIECIONE"> ZGNIECIONE
+    </label>
+</div>
             
             <input type="text" id="modal-input" placeholder="Nr rejestracyjny">
             
