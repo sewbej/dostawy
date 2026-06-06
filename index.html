@@ -268,7 +268,9 @@
         function processInvalidPlomba(text) {
             isPaused = true;
             statusText.innerText = "Zła plomba, odmowa przyjęcia.";
-            statusText.style.color = "red";
+            statusText.style.color = "black";
+            alert("Zła plomba, odmowa przyjęcia."); 
+            return; 
 
             document.body.style.backgroundColor = '#dc3545'; // Czerwone tło alarmowe
             if (navigator.vibrate) navigator.vibrate(200);
@@ -279,7 +281,7 @@
                 statusText.innerText = "Skaner aktywny...";
                 statusText.style.color = "#888";
                 isPaused = false;
-            }, 3000);
+            }, 6000);
         }
 
         function undoLastScan() {
