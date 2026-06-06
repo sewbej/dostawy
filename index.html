@@ -47,13 +47,13 @@
         .btn-excel { background: #28a745; }
         .btn-excel:hover { background: #218838; }
         
-        .btn-undo { background: #ffc107; color: #333 ;padding: 8px; font-size: 0.9em; margin-top: 30px;}
+        .btn-undo { background: #ffc107; color: #333 ;padding: 8px; font-size: 0.9em; margin-top: 10px;}
         .btn-undo:hover { background: #e0a800; }
 
         .btn-clear { background: #dc3545; padding: 8px; font-size: 0.9em; margin-top: 10px;}
         .btn-clear:hover { background: #c82333; }
 
-        /* NOWE: Style dla własnego wyskakującego okienka (Modal) */
+        /* Style dla własnego wyskakującego okienka (Modal) */
         .modal-overlay {
             display: none; position: fixed; z-index: 100; left: 0; top: 0; 
             width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
@@ -137,7 +137,6 @@
         let scannedCodes = [];
         let isPaused = false;
         
-        // Zmienne na status i rejestrację
         let currentRegNumber = ""; 
         let currentStatus = "DOBRE"; 
 
@@ -187,7 +186,6 @@
             document.getElementById('customModal').style.display = 'block';
             document.getElementById('modal-input').value = currentRegNumber;
             
-            // Zaznaczanie odpowiedniego radio buttona
             const radios = document.getElementsByName('statusWybor');
             for(let r of radios) {
                 if(r.value === currentStatus) r.checked = true;
@@ -199,21 +197,17 @@
         }
 
         function saveModalData() {
-            // Pobieranie statusu z radio buttonów
             const radios = document.getElementsByName('statusWybor');
             for(let r of radios) {
                 if(r.checked) currentStatus = r.value;
             }
             
-            // Pobieranie wpisanego tekstu
             const inputVal = document.getElementById('modal-input').value;
             currentRegNumber = inputVal.trim().toUpperCase();
 
-            // Zapis w pamięci telefonu
             localStorage.setItem('nrRejestracyjny', currentRegNumber);
             localStorage.setItem('statusKodu', currentStatus);
 
-            // Odśwież UI i zamknij okno
             updateDisplayData();
             closeModal();
         }
@@ -228,9 +222,19 @@
             html5QrCode.start({ facingMode: "environment" }, config, (text) => {
                 if (isPaused) return;
 
+                // 1. KROK: Sprawdzenie czy kod to dokładnie 15 cyfr
                 if (/^\d{15}$/.test(text)) {
-                    processValidCode(text);
+                    
+                    // 2. KROK: Sprawdzenie czy zaczyna się od "01"
+                    if (text.startsWith("01")) {
+                        processValidCode(text);
+                    } else {
+                        // KOD MA 15 CYFR, ALE NIE ZACZYNA SIĘ OD 01
+                        processInvalidPlomba(text);
+                    }
+                    
                 } else {
+                    // KOD NIE MA 15 CYFR (np. inny format)
                     statusText.innerText = "Niepoprawny kod (" + text.length + ")";
                     statusText.style.color = "red";
                 }
@@ -239,6 +243,7 @@
             });
         }
 
+        // Funkcja uruchamiana przy poprawnym kodzie (15 cyfr i start od 01)
         function processValidCode(code) {
             isPaused = true;
             statusText.innerText = "ZAPISANO!";
@@ -248,7 +253,7 @@
             saveToMemory();
             updateUI();
 
-            document.body.style.backgroundColor = '#19ff19';
+            document.body.style.backgroundColor = '#19ff19'; // Zielone tło
             if (navigator.vibrate) navigator.vibrate(200);
 
             setTimeout(() => {
@@ -257,6 +262,24 @@
                 statusText.style.color = "#888";
                 isPaused = false;
             }, 1500);
+        }
+
+        // NOWA FUNKCJA - Obsługa błędu "Zła plomba"
+        function processInvalidPlomba(text) {
+            isPaused = true;
+            statusText.innerText = "Zła plomba, odmowa przyjęcia.";
+            statusText.style.color = "red";
+
+            document.body.style.backgroundColor = '#dc3545'; // Czerwone tło alarmowe
+            if (navigator.vibrate) navigator.vibrate(200);
+
+            // Blokada na 3 sekundy, żeby operator zauważył błąd i odsunął paczkę/plombę
+            setTimeout(() => {
+                document.body.style.backgroundColor = '#f0f2f5';
+                statusText.innerText = "Skaner aktywny...";
+                statusText.style.color = "#888";
+                isPaused = false;
+            }, 3000);
         }
 
         function undoLastScan() {
@@ -287,10 +310,6 @@
                 alert("Brak danych do pobrania!");
                 return;
             }
-            if (currentRegNumber === "") {
-                alert("Wpisz nr rejestracyjny!");
-                return;
-            }
 
             const worksheet = XLSX.utils.aoa_to_sheet(scannedCodes);
             const workbook = XLSX.utils.book_new();
@@ -303,7 +322,6 @@
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             
-            // BUDOWANIE NAZWY PLIKU: uwzględnia STATUS oraz NR REJ (jeśli jest podany)
             let filename = `skany_${currentStatus}_`;
             if (currentRegNumber !== "") {
                 filename += `${currentRegNumber}_`;
@@ -319,7 +337,7 @@
             if(confirm("Czy na pewno chcesz usunąć WSZYSTKIE zeskanowane kody z pamięci? Upewnij się, że pobrałeś plik Excel!")) {
                 scannedCodes = [];
                 currentRegNumber = ""; 
-                currentStatus = "DOBRE"; // Powrót do domyślnego
+                currentStatus = "DOBRE"; 
                 
                 localStorage.removeItem('mojeSkany15');
                 localStorage.removeItem('nrRejestracyjny');
