@@ -226,7 +226,7 @@
                 if (/^\d{15}$/.test(text)) {
                     
                     // 2. KROK: Sprawdzenie czy zaczyna się od "01"
-                    if (text.startsWith("01")) {
+                    if (text.startsWith("01") || text.startsWith("05")) {
                         processValidCode(text);
                     } else {
                         // KOD MA 15 CYFR, ALE NIE ZACZYNA SIĘ OD 01
