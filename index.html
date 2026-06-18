@@ -37,7 +37,7 @@
         .btn-group { display: flex; gap: 10px; flex-direction: column; }
         button { padding: 15px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; width: 100%; box-sizing: border-box; transition: background 0.2s;}
         
-        .btn-reg { background: #007bff; margin-bottom: 0px; }
+        .btn-reg { background: #007bff; margin-bottom: 30px; }
         .btn-reg:hover { background: #0056b3; }
 
         /* PRZYCISK WPISYWANIA RĘCZNEGO */
@@ -78,6 +78,12 @@
             text-transform: uppercase; box-sizing: border-box; text-align: center;
             border: 2px solid #ccc; border-radius: 6px;
         }
+
+        #manual-code-input { 
+            width: 100%; padding: 12px; margin-bottom: 20px; font-size: 1.2em; 
+            text-transform: uppercase; box-sizing: border-box; text-align: center;
+            border: 2px solid #ccc; border-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +93,16 @@
         <div id="scanner-overlay"></div>
     </div>
 
-    <button class="btn-manual" onclick="manualInputCode()">Wpisz kod ręcznie</button>
+<button class="btn-manual" onclick="manualInputCode()">Wpisz kod ręcznie</button>
+
+    <div id="manualCodeModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Wpisz kod ręcznie</h3>
+        <input type="number" id="manual-code-input" placeholder="Wpisz kod" pattern="\d*">
+        <button class="btn-reg" onclick="saveManualCode()">Zatwierdź</button>
+        <button class="btn-undo" onclick="closeManualModal()">Anuluj</button>
+    </div>
+</div>
 
     <div id="status">Skaner aktywny...</div>
 
@@ -234,16 +249,43 @@
         }
 
         // NOWA FUNKCJA - Obsługa wpisywania z ręki
-        function manualInputCode() {
-            if (isPaused) return;
-            
-            const userInput = prompt("Wpisz 15-cyfrowy kod:");
-            
-            if (userInput !== null) { // Jeśli użytkownik nie kliknął "Anuluj"
-                const cleanedInput = userInput.trim();
-                validateAndProcessCode(cleanedInput);
-            }
+function manualInputCode() {
+    if (isPaused) return;
+    // Otwiera modal
+    document.getElementById('manualCodeModal').style.display = 'block';
+    // Ustawia kursor od razu w polu tekstowym
+    document.getElementById('manual-code-input').focus();
+}
+
+function closeManualModal() {
+    document.getElementById('manualCodeModal').style.display = 'none';
+    document.getElementById('manual-code-input').value = ""; // Czyści przy anulowaniu
+}
+
+function saveManualCode() {
+    const inputField = document.getElementById('manual-code-input');
+    const text = inputField.value.trim();
+
+    // 1. KROK: Sprawdzenie czy kod to dokładnie 15 cyfr
+    if (/^\d{15}$/.test(text)) {
+        
+        // 2. KROK: Sprawdzenie czy zaczyna się od "01" LUB "05"
+        if (text.startsWith("01") || text.startsWith("05")) {
+            processValidCode(text);
+            closeManualModal(); // Sukces -> zamknij okno i wyczyść pole
+        } else {
+            // Kod ma 15 cyfr, ale zły początek (odmowa przyjęcia)
+            processInvalidPlomba(text);
+            closeManualModal(); // Zamknij okno, bo to krytyczny błąd biznesowy
         }
+        
+    } else {
+        // BŁĄD: Zła ilość cyfr lub znaki niebędące cyframi
+        alert(`Błąd! Kod musi mieć dokładnie 15 cyfr.\nTwoja długość: ${text.length} znaków.\n\nPopraw wpisany kod.`);
+        // OKNO ZOSTAJE OTWARTE, A TEKST NIE JEST CZYSZCZONY
+        inputField.focus(); 
+    }
+}
 
         // Wspólna funkcja weryfikująca kod (dla skanera i dla wpisu ręcznego)
         function validateAndProcessCode(text) {
