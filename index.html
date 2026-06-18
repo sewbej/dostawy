@@ -40,6 +40,10 @@
         .btn-reg { background: #007bff; margin-bottom: 0px; }
         .btn-reg:hover { background: #0056b3; }
 
+        /* PRZYCISK WPISYWANIA RĘCZNEGO */
+        .btn-manual { background: #5946b2; color: #fff; margin-top: 10px; width: 100%; max-width: 500px;}
+        .btn-manual:hover { background: #413a66; }
+
         /* WYŚWIETLANIE STATUSU I NR REJ. */
         #reg-display { font-size: 1.1em; color: #007bff; font-weight: bold; display: none; margin-bottom: 10px; line-height: 1.4; }
         .data-label { color: #555; font-weight: normal; font-size: 0.9em;}
@@ -82,6 +86,8 @@
         <div id="reader"></div>
         <div id="scanner-overlay"></div>
     </div>
+
+    <button class="btn-manual" onclick="manualInputCode()">Wpisz kod ręcznie</button>
 
     <div id="status">Skaner aktywny...</div>
 
@@ -221,26 +227,42 @@
         function startScanner() {
             html5QrCode.start({ facingMode: "environment" }, config, (text) => {
                 if (isPaused) return;
-
-                // 1. KROK: Sprawdzenie czy kod to dokładnie 15 cyfr
-                if (/^\d{15}$/.test(text)) {
-                    
-                    // 2. KROK: Sprawdzenie czy zaczyna się od "01"
-                    if (text.startsWith("01") || text.startsWith("05")) {
-                        processValidCode(text);
-                    } else {
-                        // KOD MA 15 CYFR, ALE NIE ZACZYNA SIĘ OD 01
-                        processInvalidPlomba(text);
-                    }
-                    
-                } else {
-                    // KOD NIE MA 15 CYFR (np. inny format)
-                    statusText.innerText = "Niepoprawny kod (" + text.length + ")";
-                    statusText.style.color = "black";
-                }
+                validateAndProcessCode(text);
             }).catch(err => {
                 statusText.innerText = "Błąd kamery. Wymagany HTTPS.";
             });
+        }
+
+        // NOWA FUNKCJA - Obsługa wpisywania z ręki
+        function manualInputCode() {
+            if (isPaused) return;
+            
+            const userInput = prompt("Wpisz 15-cyfrowy kod:");
+            
+            if (userInput !== null) { // Jeśli użytkownik nie kliknął "Anuluj"
+                const cleanedInput = userInput.trim();
+                validateAndProcessCode(cleanedInput);
+            }
+        }
+
+        // Wspólna funkcja weryfikująca kod (dla skanera i dla wpisu ręcznego)
+        function validateAndProcessCode(text) {
+            // 1. KROK: Sprawdzenie czy kod to dokładnie 15 cyfr
+            if (/^\d{15}$/.test(text)) {
+                
+                // 2. KROK: Sprawdzenie czy zaczyna się od "01" LUB "05"
+                if (text.startsWith("01") || text.startsWith("05")) {
+                    processValidCode(text);
+                } else {
+                    // KOD MA 15 CYFR, ALE NIE ZACZYNA SIĘ OD 01 ANI 05
+                    processInvalidPlomba(text);
+                }
+                
+            } else {
+                // KOD NIE MA 15 CYFR (np. inny format lub puste pole)
+                statusText.innerText = "Niepoprawny kod (" + text.length + ") cyfr";
+                statusText.style.color = "black";
+            }
         }
 
         // Funkcja uruchamiana przy poprawnym kodzie (15 cyfr i start od 01)
@@ -280,7 +302,7 @@
                 statusText.innerText = "Skaner aktywny...";
                 statusText.style.color = "#888";
                 isPaused = false;
-            }, 6000);
+            }, 4000);
         }
 
         function undoLastScan() {
