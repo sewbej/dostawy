@@ -140,7 +140,7 @@
         <input type="radio" name="statusWybor" value="OTWARTE"> OTWARTE
     </label>
     <label class="radio-label">
-        <input type="radio" name="statusWybor" value="ZGNIECIONE"> ZGNIECIONE
+        <input type="radio" name="statusWybor" value="BUSIK_DOBRE"> BUSIK
     </label>
 </div>
             
@@ -406,7 +406,15 @@ function saveManualCode() {
         }
 
         function clearData() {
-            if(confirm("Czy na pewno chcesz usunąć WSZYSTKIE zeskanowane kody z pamięci? Upewnij się, że pobrałeś plik Excel!")) {
+            // Ustaw swój własny PIN (np. "1234")
+            const CORRECT_PIN = "4444";
+
+            const userPin = prompt("Podaj PIN, aby wyzerować pamięć i rozpocząć nowy plik:");
+
+            if (userPin === null) return;
+
+            // Sprawdzamy czy poprawny PIN
+            if (userPin === CORRECT_PIN) {
                 scannedCodes = [];
                 currentRegNumber = ""; 
                 currentStatus = "DOBRE"; 
@@ -417,6 +425,10 @@ function saveManualCode() {
                 
                 document.getElementById('reg-display').style.display = 'none'; 
                 updateUI();
+
+                alert("Pamięć została pomyślnie wyczyszczona.");
+            } else {
+                alert("Błędny PIN! Operacja została anulowana.");
             }
         }
 
